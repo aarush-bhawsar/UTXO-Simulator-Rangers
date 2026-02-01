@@ -9,20 +9,18 @@ def generate_tx_id(sender, recipient):
 
 class Transaction:
     def __init__(self, sender, recipient, inputs, outputs):
-        """
-        sender: str (e.g., 'Alice')
-        recipient: str (e.g., 'Bob')
-        inputs: list of dicts {'prev_tx': str, 'index': int, 'owner': str}
-        outputs: list of dicts {'amount': float, 'address': str}
-        """
-
         self.tx_id = generate_tx_id(sender, recipient)
+        # SAVE THESE ATTRIBUTES SO main.py CAN ACCESS THEM
+        self.sender = sender
+        self.recipient = recipient
         self.inputs = inputs
         self.outputs = outputs
 
     def to_dict(self):
         return {
             "tx_id": self.tx_id,
+            "sender": self.sender,
+            "recipient": self.recipient,
             "inputs": self.inputs,
             "outputs": self.outputs
         }

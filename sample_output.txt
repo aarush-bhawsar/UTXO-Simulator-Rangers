@@ -1,0 +1,62 @@
+======================================================================
+BITCOIN UTXO SIMULATOR - MANDATORY TEST SCENARIOS
+Course: CS 216 Introduction to Blockchain
+Assignment: Transaction & UTXO Simulation
+======================================================================
+
+--- INITIAL GENESIS STATE ---
+Alice  : 50.0 BTC
+Bob    : 30.0 BTC
+Charlie: 20.0 BTC
+David  : 10.0 BTC
+Eve    : 5.0 BTC
+
+=== STARTING ALL MANDATORY TEST CASES ===
+
+Test 1: Basic Valid Transaction (Alice -> Bob, 0.001 Fee)
+Result: True - Added to mempool. Transaction valid! Fee: 0.0010 BTC
+
+Test 2: Multiple Inputs (Alice spends 50 + 20)
+Result: False (Expected Reject) - Validation Error: UTXO genesis:0 is already being spent in the mempool.
+
+Test 3: Double-Spend in Same Transaction
+Result: False - Validation Error: Duplicate input ('genesis', 1) in the same transaction.
+
+Test 4: Mempool Double-Spend (TX already exists for Genesis:0)
+Result: False - Validation Error: UTXO genesis:0 is already being spent in the mempool.
+
+Test 5: Insufficient Funds (Bob sends 35 but has 30)
+Result: False - Validation Error: Insufficient funds. Inputs (30.0) < Outputs (35.0).
+
+Test 6: Negative Amount
+Result: False - Validation Error: Negative output amount detected.
+
+Test 7: Zero Fee Transaction (Inputs == Outputs)
+Result: True - Added to mempool. Transaction valid! Fee: 0.0000 BTC
+
+Test 8: Race Attack (Bob sends same UTXO to Alice then Charlie)
+TX1: True, TX2: False (Expected False) - Validation Error: UTXO genesis:1 is already being spent in the mempool.
+
+Test 9: Complete Mining Flow
+Mempool size before mining: 3
+Mining block with 3 transactions...
+Block mined! Miner Miner_V reward: 0.1010 BTC
+Mempool size after mining: 0
+
+Test 10: Unconfirmed Chain
+Design Choice: Reject (Approach A).
+Reasoning: The simulator follows a "Mined-UTXO-Only" policy to ensure state consistency and prevent 
+orphaned transaction chains. Spent UTXOs must be confirmed in a block before they appear as 
+spendable inputs for subsequent transactions.
+
+=== FINAL BALANCES ===
+Alice: 54.999 BTC
+Bob: 29.9 BTC
+Charlie: 20.0 BTC
+David: 10.0 BTC
+Eve: 0.0 BTC
+Miner_V: 0.101 BTC (Fees + Block Reward)
+
+======================================================================
+SIMULATION COMPLETE - ALL CONSTRAINTS VALIDATED
+======================================================================

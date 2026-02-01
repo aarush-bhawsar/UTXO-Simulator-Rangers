@@ -1,0 +1,14 @@
+# Python-specific ignores
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment-specific (optional but recommended)
+.venv/
+venv/
+env/
+.env
+
+# IDE-specific
+.vscode/
+.idea/

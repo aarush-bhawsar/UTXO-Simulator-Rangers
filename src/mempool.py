@@ -1,4 +1,4 @@
-from validate import Validator
+from src.validate import Validator
 
 class Mempool:
     def __init__(self, max_size=50):
@@ -36,7 +36,8 @@ class Mempool:
             total_in = 0.0
             for inp in tx.inputs:
                 if utxo_manager.exists(inp['prev_tx'], inp['index']):
-                    val, _ = utxo_manager.utxo_set[(inp['prev_tx'], inp['index'])]
+                    utxo_data = utxo_manager.utxo_set[(inp['prev_tx'], inp['index'])]
+                    val = utxo_data["amount"]
                     total_in += val
             
             total_out = sum(o['amount'] for o in tx.outputs)

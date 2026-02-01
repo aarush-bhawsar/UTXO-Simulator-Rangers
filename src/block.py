@@ -1,5 +1,5 @@
 import time
-from transaction import Transaction
+from src.transaction import Transaction
 
 def mine_block(miner_address, mempool, utxo_manager, num_txs=3):
     """
@@ -24,7 +24,8 @@ def mine_block(miner_address, mempool, utxo_manager, num_txs=3):
             prev_id, prev_idx = inp['prev_tx'], inp['index']
             
             if utxo_manager.exists(prev_id, prev_idx):
-                amt, _ = utxo_manager.utxo_set[(prev_id, prev_idx)]
+                utxo_data = utxo_manager.utxo_set[(prev_id, prev_idx)]
+                amt = utxo_data["amount"]
                 input_sum += amt
                 utxo_manager.remove_utxo(prev_id, prev_idx)
             

@@ -27,8 +27,9 @@ class Validator:
             if (prev_id, idx) in mempool.spent_utxos:
                 return False, f"Validation Error: UTXO {prev_id}:{idx} is already being spent in the mempool."
 
-            amount, owner = utxo_manager.utxo_set[(prev_id, idx)]
-            total_input_value += amount
+            utxo_data = utxo_manager.utxo_set[(prev_id, idx)]
+            amount = utxo_data["amount"]
+            total_input_value += float(amount)
 
         # Rule 3: Ensure sufficient funds
         total_output_value = sum(output['amount'] for output in transaction.outputs)
