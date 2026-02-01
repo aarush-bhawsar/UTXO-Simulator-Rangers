@@ -56,11 +56,7 @@ def main():
                 print("Error: Invalid amount entered.")
                 continue
 
-            # Get UTXOs owned by sender
             sender_utxos = utxo_manager.get_utxos_for_owner(sender)
-            
-            # Simple strategy: Use the first available UTXO
-            # In a real app, you'd loop to combine multiple UTXOs if one isn't enough
             selected_utxo = sender_utxos[0]
             fee = 0.001
             total_needed = amount + fee
@@ -71,7 +67,6 @@ def main():
 
             change = selected_utxo['amount'] - total_needed
 
-            # Construct Transaction
             tx = Transaction(
                 sender=sender,
                 recipient=recipient,
@@ -86,7 +81,6 @@ def main():
                 ]
             )
             
-            # Add to Mempool
             success, msg = mempool.add_transaction(tx, utxo_manager)
             print(msg)
 
@@ -104,18 +98,23 @@ def main():
                 print("Mempool is empty.")
             else:
                 for tx in mempool.transactions:
-                    # Now tx.sender and tx.recipient exist!
                     print(f"ID: {tx.tx_id} | {tx.sender} -> {tx.recipient} | Amount: {tx.outputs[0]['amount']} BTC")
 
         elif choice == '4':
             miner = input("Enter miner name for reward: ")
-            # Mines top 3 transactions by default
             success = mine_block(miner, mempool, utxo_manager)
             if not success:
                 print("Mining failed (likely empty mempool).")
 
         elif choice == '5':
-            run_tests(utxo_manager, mempool)
+            print("\n--- Test Suite ---")
+            print("Enter Test Case Number (1-10) to run a specific test.")
+            print("Enter -1 to run ALL tests.")
+            t_choice = input("Choice: ")
+            try:
+                run_tests(utxo_manager, mempool, int(t_choice))
+            except ValueError:
+                print("Invalid input. Please enter a number.")
 
         elif choice == '6':
             print("Milte Hai...")
