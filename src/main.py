@@ -67,8 +67,8 @@ def main():
             remainder = utxo_amount - amount
             
             # If remainder is zero or negative, we can't pay ANY fee
-            if remainder <= 0:
-                print(f"Error: Selected UTXO ({utxo_amount} BTC) is insufficient to pay amount + non-zero fee.")
+            if remainder < 0:
+                print(f"Error: Selected UTXO ({utxo_amount} BTC) is insufficient to pay amount + fee.")
                 continue
 
             target_fee = Decimal('0.001')
@@ -122,14 +122,7 @@ def main():
                 print("Mining failed (likely empty mempool).")
 
         elif choice == '5':
-            print("\n--- Test Suite ---")
-            print("Enter Test Case Number (1-10) to run a specific test.")
-            print("Enter -1 to run ALL tests.")
-            t_choice = input("Choice: ")
-            try:
-                run_tests(utxo_manager, mempool, int(t_choice))
-            except ValueError:
-                print("Invalid input. Please enter a number.")
+            run_tests()
 
         elif choice == '6':
             print("Thankyou!")
