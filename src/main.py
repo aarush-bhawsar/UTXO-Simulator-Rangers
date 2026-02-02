@@ -4,13 +4,14 @@ from src.mempool import Mempool
 from src.transaction import Transaction
 from src.block import mine_block
 from tests.test_scenarios import run_tests
+from decimal import Decimal, getcontext
+getcontext().prec = 28
 
 def parse_amount(input_str):
-    """Safely converts strings like '10.0 BTC' to a float."""
     try:
         clean = input_str.upper().replace("BTC", "").strip()
-        return float(clean)
-    except ValueError:
+        return Decimal(clean) 
+    except:
         return None
 
 def main():
@@ -58,14 +59,28 @@ def main():
 
             sender_utxos = utxo_manager.get_utxos_for_owner(sender)
             selected_utxo = sender_utxos[0]
-            fee = 0.001
-            total_needed = amount + fee
             
-            if selected_utxo['amount'] < total_needed:
-                print(f"Error: Selected UTXO ({selected_utxo['amount']} BTC) is too small for amount + fee.")
+            # --- START OF UPDATED FEE LOGIC ---
+            utxo_amount = Decimal(str(selected_utxo['amount']))
+            
+            # Check how much is left after the transfer amount
+            remainder = utxo_amount - amount
+            
+            # If remainder is zero or negative, we can't pay ANY fee
+            if remainder <= 0:
+                print(f"Error: Selected UTXO ({utxo_amount} BTC) is insufficient to pay amount + non-zero fee.")
                 continue
 
-            change = selected_utxo['amount'] - total_needed
+            target_fee = Decimal('0.001')
+
+            # If we have enough for the standard fee
+            if remainder >= target_fee:
+                change = remainder - target_fee
+            # If we have less than 0.001 but more than 0, take all remainder as fee
+            else:
+                print(f"Warning: Insufficient funds for full 0.001 fee. Using available remainder ({remainder} BTC) as fee.")
+                change = Decimal('0.0')
+            # --- END OF UPDATED FEE LOGIC ---
 
             tx = Transaction(
                 sender=sender,
@@ -117,7 +132,7 @@ def main():
                 print("Invalid input. Please enter a number.")
 
         elif choice == '6':
-            print("Milte Hai...")
+            print("Thankyou!")
             sys.exit()
         
         else:

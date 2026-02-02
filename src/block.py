@@ -1,4 +1,5 @@
 import time
+from decimal import Decimal 
 from src.transaction import Transaction
 
 def mine_block(miner_address, mempool, utxo_manager, num_txs=3):
@@ -12,12 +13,12 @@ def mine_block(miner_address, mempool, utxo_manager, num_txs=3):
         print("Mempool empty, nothing to mine.")
         return False
 
-    total_fees = 0.0
+    total_fees = Decimal('0.0')
     print(f"Mining block with {len(selected_txs)} transactions...")
 
     for tx in selected_txs:
-        input_sum = 0.0
-        output_sum = 0.0
+        input_sum = Decimal('0.0')
+        output_sum = Decimal('0.0')
         
         # 1. Consume Inputs (Remove from UTXO set)
         for inp in tx.inputs:
@@ -35,8 +36,10 @@ def mine_block(miner_address, mempool, utxo_manager, num_txs=3):
 
         # 2. Create Outputs (Add to UTXO set)
         for i, out in enumerate(tx.outputs):
-            utxo_manager.add_utxo(tx.tx_id, i, out['amount'], out['address'])
-            output_sum += out['amount']
+            amount_decimal = Decimal(str(out['amount']))
+            
+            utxo_manager.add_utxo(tx.tx_id, i, amount_decimal, out['address'])
+            output_sum += amount_decimal
 
         # Fee = Inputs - Outputs
         total_fees += (input_sum - output_sum)
@@ -56,5 +59,5 @@ def mine_block(miner_address, mempool, utxo_manager, num_txs=3):
     for tx in selected_txs:
         mempool.remove_transaction(tx.tx_id)
 
-    print(f"Block mined! Miner {miner_address} reward: {total_fees:.4f} BTC")
+    print(f"Block mined! Miner {miner_address} reward: {total_fees} BTC")
     return True

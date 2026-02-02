@@ -1,3 +1,5 @@
+from decimal import Decimal 
+
 class UTXOManager:
     def __init__(self):
         # Store UTXOs as dictionary: (tx_id, index) -> {amount, owner}
@@ -8,8 +10,9 @@ class UTXOManager:
         Add a new UTXO to the set.
         """
         key = (tx_id, index)
+        
         self.utxo_set[key] = {
-            "amount": amount,
+            "amount": Decimal(str(amount)), 
             "owner": owner
         }
 
@@ -21,11 +24,11 @@ class UTXOManager:
         if key in self.utxo_set:
             del self.utxo_set[key]
         
-    def get_balance(self, owner: str) -> float:
+    def get_balance(self, owner: str) -> Decimal: 
         """
         Calculate total balance for an address.
         """
-        balance = 0.0
+        balance = Decimal('0.0') 
         for utxo in self.utxo_set.values():
             if utxo["owner"] == owner:
                 balance += utxo["amount"]

@@ -1,3 +1,4 @@
+from decimal import Decimal
 from src.validate import Validator
 
 class Mempool:
@@ -33,14 +34,16 @@ class Mempool:
     def get_top_transactions(self, n, utxo_manager):
         """Returns top N transactions sorted by fee (descending)."""
         def calc_fee(tx):
-            total_in = 0.0
+            total_in = Decimal('0.0')
             for inp in tx.inputs:
                 if utxo_manager.exists(inp['prev_tx'], inp['index']):
                     utxo_data = utxo_manager.utxo_set[(inp['prev_tx'], inp['index'])]
-                    val = utxo_data["amount"]
+                    # Ensure input value is treated as Decimal
+                    val = Decimal(str(utxo_data["amount"]))
                     total_in += val
             
-            total_out = sum(o['amount'] for o in tx.outputs)
+            # Ensure output values are summed as Decimals
+            total_out = sum(Decimal(str(o['amount'])) for o in tx.outputs)
             return total_in - total_out
 
         # Sort by fee desc

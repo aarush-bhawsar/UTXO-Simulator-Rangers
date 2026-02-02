@@ -1,9 +1,11 @@
+from decimal import Decimal
+
 class Validator:
     @staticmethod
     def validate_transaction(transaction, utxo_manager, mempool):
         # Rule 4: Check for negative outputs
         for output in transaction.outputs:
-            if output['amount'] < 0:
+            if Decimal(str(output['amount'])) < 0:
                 return False, "Validation Error: Negative output amount detected."
 
         # Rule 2: Check for duplicate inputs within the same transaction
@@ -14,7 +16,8 @@ class Validator:
                 return False, f"Validation Error: Duplicate input {key} in the same transaction."
             input_keys.add(key)
 
-        total_input_value = 0.0
+        # Initialize as Decimal to avoid floating point errors
+        total_input_value = Decimal('0.0')
         
         # Rule 1 & 5: Validate inputs against UTXO Manager and Mempool
         for tx_input in transaction.inputs:
@@ -28,14 +31,16 @@ class Validator:
                 return False, f"Validation Error: UTXO {prev_id}:{idx} is already being spent in the mempool."
 
             utxo_data = utxo_manager.utxo_set[(prev_id, idx)]
-            amount = utxo_data["amount"]
-            total_input_value += float(amount)
+            # Convert stored amount to Decimal
+            amount = Decimal(str(utxo_data["amount"]))
+            total_input_value += amount
 
-        # Rule 3: Ensure sufficient funds
-        total_output_value = sum(output['amount'] for output in transaction.outputs)
+        # Rule 3: Ensure sufficient funds - Calculate output sum using Decimals
+        total_output_value = sum(Decimal(str(output['amount'])) for output in transaction.outputs)
         
         if total_input_value < total_output_value:
             return False, f"Validation Error: Insufficient funds. Inputs ({total_input_value}) < Outputs ({total_output_value})."
 
+        # Safe Decimal subtraction for exact fee calculation
         fee = total_input_value - total_output_value
-        return True, f"Transaction valid! Fee: {fee:.4f} BTC"
+        return True, f"Transaction valid! Fee: {fee} BTC"
