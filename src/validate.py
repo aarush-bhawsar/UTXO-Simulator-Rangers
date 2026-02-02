@@ -43,4 +43,9 @@ class Validator:
 
         # Safe Decimal subtraction for exact fee calculation
         fee = total_input_value - total_output_value
+        
+        # Rule: Fee must be positive (non-zero)
+        if fee <= 0:
+             return False, "Validation Error: Zero or negative fee transactions are not allowed."
+
         return True, f"Transaction valid! Fee: {fee} BTC"
