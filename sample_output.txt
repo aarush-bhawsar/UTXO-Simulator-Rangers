@@ -1,62 +1,123 @@
-======================================================================
-BITCOIN UTXO SIMULATOR - MANDATORY TEST SCENARIOS
-Course: CS 216 Introduction to Blockchain
-Assignment: Transaction & UTXO Simulation
-======================================================================
+============================================================
+     BITCOIN UTXO SIMULATOR - MANDATORY TEST SCENARIOS      
+============================================================
+
+[!] Test Environment Reset: Genesis State Restored.
 
 --- INITIAL GENESIS STATE ---
-Alice  : 50.0 BTC
-Bob    : 30.0 BTC
-Charlie: 20.0 BTC
-David  : 10.0 BTC
-Eve    : 5.0 BTC
+Alice          : 50.0 BTC
+Bob            : 30.0 BTC
+Charlie        : 20.0 BTC
+David          : 10.0 BTC
+Eve            : 5.0 BTC
 
-=== STARTING ALL MANDATORY TEST CASES ===
+============================================================
+              Test 1: Basic Valid Transaction               
+============================================================
+[*] ACTION  : Alice sends 10 BTC to Bob (Fee: 0.001)
+[*] EXPECTED: Transaction Accepted
+    -> Response: Transaction valid! Fee: 0.001 BTC added to mempool.
+    -> Status  : [ PASS ]
+------------------------------------------------------------
 
-Test 1: Basic Valid Transaction (Alice -> Bob, 0.001 Fee)
-Result: True - Added to mempool. Transaction valid! Fee: 0.0010 BTC
+============================================================
+                Test 2: Multiple Inputs Check               
+============================================================
+[*] ACTION  : 1. Charlie sends 20 BTC to Alice.
+              2. Mine block to confirm funds.
+              3. Alice sends 50 BTC (Uses Change + Charlie's funds).
+[*] EXPECTED: Final Multi-Input TX Accepted
+    -> Setup TX (Charlie->Alice): Transaction valid! Fee: 0.0 BTC added to mempool.
+    -> [Mining Block to confirm previous inputs...]
+    -> Inputs selected: 39.999 BTC & 20.0 BTC
+    -> Response: Transaction valid! Fee: 0.001 BTC added to mempool.
+    -> Status  : [ PASS ]
+------------------------------------------------------------
 
-Test 2: Multiple Inputs (Alice spends 50 + 20)
-Result: False (Expected Reject) - Validation Error: UTXO genesis:0 is already being spent in the mempool.
+============================================================
+          Test 3: Double-Spend in Same Transaction          
+============================================================
+[*] ACTION  : Bob uses same UTXO twice as input
+[*] EXPECTED: Transaction REJECTED
+    -> Response: Validation Error: Duplicate input ('genesis', 1) detected.
+    -> Status  : [ PASS ]
+------------------------------------------------------------
 
-Test 3: Double-Spend in Same Transaction
-Result: False - Validation Error: Duplicate input ('genesis', 1) in the same transaction.
+============================================================
+                Test 4: Mempool Double-Spend                
+============================================================
+[*] ACTION  : Alice tries to spend genesis:0 again (used in Test 1)
+[*] EXPECTED: Transaction REJECTED
+    -> Response: Validation Error: UTXO genesis:0 is already being spent in mempool.
+    -> Status  : [ PASS ]
+------------------------------------------------------------
 
-Test 4: Mempool Double-Spend (TX already exists for Genesis:0)
-Result: False - Validation Error: UTXO genesis:0 is already being spent in the mempool.
+============================================================
+                Test 5: Insufficient Funds                  
+============================================================
+[*] ACTION  : Bob (30 BTC) tries to send 35 BTC
+[*] EXPECTED: Transaction REJECTED
+    -> Response: Validation Error: Inputs (30.0) less than outputs (35.0).
+    -> Status  : [ PASS ]
+------------------------------------------------------------
 
-Test 5: Insufficient Funds (Bob sends 35 but has 30)
-Result: False - Validation Error: Insufficient funds. Inputs (30.0) < Outputs (35.0).
+============================================================
+                  Test 6: Negative Amount                   
+============================================================
+[*] ACTION  : David sends -5.0 BTC
+[*] EXPECTED: Transaction REJECTED
+    -> Response: Validation Error: Output amount cannot be negative.
+    -> Status  : [ PASS ]
+------------------------------------------------------------
 
-Test 6: Negative Amount
-Result: False - Validation Error: Negative output amount detected.
+============================================================
+                Test 7: Zero Fee Transaction                
+============================================================
+[*] ACTION  : David sends 10 BTC (Fee = 0)
+[*] EXPECTED: Transaction ACCEPTED
+    -> Response: Transaction valid! Fee: 0.0 BTC added to mempool.
+    -> Status  : [ PASS ]
+------------------------------------------------------------
 
-Test 7: Zero Fee Transaction (Inputs == Outputs)
-Result: True - Added to mempool. Transaction valid! Fee: 0.0000 BTC
+============================================================
+                Test 8: Race Attack / Replacement           
+============================================================
+[*] ACTION  : Spend genesis:0 again (already spent in Test 1)
+[*] EXPECTED: Transaction REJECTED (First-Seen Rule)
+    -> Response: Validation Error: UTXO genesis:0 is already being spent in mempool.
+    -> Status  : [ PASS ]
+------------------------------------------------------------
 
-Test 8: Race Attack (Bob sends same UTXO to Alice then Charlie)
-TX1: True, TX2: False (Expected False) - Validation Error: UTXO genesis:1 is already being spent in the mempool.
+============================================================
+                Test 9: Complete Mining Flow                
+============================================================
+[*] ACTION  : Mine remaining transactions in Mempool
+[*] EXPECTED: Block Mined & Balances Updated
+    -> Mempool size before mining: 2
+    -> Block Mined! Miner Reward: 50.001 BTC
+    -> Status  : [ PASS ]
+------------------------------------------------------------
 
-Test 9: Complete Mining Flow
-Mempool size before mining: 3
-Mining block with 3 transactions...
-Block mined! Miner Miner_V reward: 0.1010 BTC
-Mempool size after mining: 0
+============================================================
+                 Test 10: Unconfirmed Chain                 
+============================================================
+[*] ACTION  : Create Parent TX -> Try to spend Parent Output immediately
+[*] EXPECTED: Child TX REJECTED (Must wait for mining)
+    -> Parent TX Result: Transaction valid! Fee: 0.001 BTC added to mempool.
+    -> Response: Validation Error: UTXO is unconfirmed (not in UTXO set).
+    -> Design Decision: Simulator requires mined UTXOs.
+    -> Status  : [ PASS ]
+------------------------------------------------------------
 
-Test 10: Unconfirmed Chain
-Design Choice: Reject (Approach A).
-Reasoning: The simulator follows a "Mined-UTXO-Only" policy to ensure state consistency and prevent 
-orphaned transaction chains. Spent UTXOs must be confirmed in a block before they appear as 
-spendable inputs for subsequent transactions.
-
-=== FINAL BALANCES ===
-Alice: 54.999 BTC
-Bob: 29.9 BTC
-Charlie: 20.0 BTC
-David: 10.0 BTC
-Eve: 0.0 BTC
-Miner_V: 0.101 BTC (Fees + Block Reward)
-
-======================================================================
-SIMULATION COMPLETE - ALL CONSTRAINTS VALIDATED
-======================================================================
+============================================================
+             FINAL BALANCES (TEST ENVIRONMENT)              
+============================================================
+    Alice          : 9.998 BTC
+    Bob            : 60.0 BTC
+    Charlie        : 0.0 BTC
+    David          : 0.0 BTC
+    Eve            : 15.0 BTC
+    Frank          : 0.0 BTC
+    Miner_1        : 50.001 BTC
+    Miner_Test2    : 50.001 BTC
+============================================================

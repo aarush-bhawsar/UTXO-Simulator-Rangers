@@ -31,7 +31,13 @@ Follow these steps to execute the simulator:
 
 1. Clone this repository or download the source code.
 2. Navigate to the project root directory in your terminal.
+
+   ```bash
+   git clone [https://github.com/aarush-bhawsar/UTXO-Simulator-Rangers.git](https://github.com/aarush-bhawsar/UTXO-Simulator-Rangers.git)
+   cd UTXO-Simulator-Rangers
+   ```
+
 3. Run the main program using the following command:
 
    ```bash
-   python src/main.py
+   python -m src.main
